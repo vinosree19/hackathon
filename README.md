@@ -1,2 +1,2 @@
 # hackathon
-ForHackathon Development
+For Hackathon Development
