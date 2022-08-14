@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queries>
+    <query name="FETCH_PENDING_ORDER_HEADER_ENTITY_FOR_REPORT">
+        SELECT ih.CmpCode                                                                              AS cmpCode,
+               ih.DistrCode                                                                            AS distrCode,
+               ih.InvoiceNo                                                                            AS invoiceNo,
+               ih.InvoiceDt                                                                            AS invoiceDt,
+               ih.SalesmanCode                                                                         AS salesmanCode,
+               s.SalesmanName                                                                          AS salesmanName,
+               ih.RouteCode                                                                            AS routeCode,
+               r.RouteName                                                                             AS routeName,
+               ih.CustomerCode                                                                         AS customerCode,
+               c.CustomerName                                                                          AS customerName,
+               c.MobileNo                                                                              AS mobileNo,
+               c.FssaiNo                                                                               AS fssaiNo,
+               c.GSTTinNo                                                                              AS gstTinNo,
+               CONCAT(csa.CustomerShipAddr1, ', ', csa.CustomerShipAddr2, ', ', csa.CustomerShipAddr3) AS customerShipAddr,
+               ih.TotGrossAmt                                                                          AS totGrossAmt,
+               ih.TotCashDiscAmt                                                                       AS totCashDiscAmt,
+               ih.TotDBDiscAmt                                                                         AS totDBDiscAmt,
+               ih.TotSchDiscAmt                                                                        AS totSchDiscAmt,
+               ih.TotTaxAmt                                                                            AS totTaxAmt,
+               ih.TotNetAmt                                                                            AS totNetAmt,
+               ih.RoundOffAmt                                                                          AS roundOffAmt,
+               ih.TotCrNoteAmt                                                                         AS totCrNoteAmt,
+               ih.Remarks                                                                              AS remarks
+        FROM invoiceheader ih
+                 INNER JOIN customer C
+                            ON ih.CmpCode = c.CmpCode
+                                AND ih.DistrCode = c.DistrCode
+                                AND ih.CustomerCode = c.CustomerCode
+                 INNER JOIN salesman s
+                            ON ih.CmpCode = s.CmpCode
+                                AND ih.DistrCode = s.DistrCode
+                                AND ih.SalesmanCode = s.SalesmanCode
+                 INNER JOIN route r
+                            ON ih.CmpCode = r.CmpCode
+                                AND ih.DistrCode = r.DistrCode
+                                AND ih.RouteCode = r.RouteCode
+                 INNER JOIN customershipaddress csa
+                            ON ih.CmpCode = csa.CmpCode
+                                AND ih.DistrCode = csa.DistrCode
+                                AND ih.CustomerCode = csa.CustomerCode
+                                AND ih.CustomerShipCode = csa.CustomerShipCode
+        WHERE ih.CmpCode = ?
+          AND ih.DistrCode = ?
+          AND ih.InvoiceDt BETWEEN CAST(? AS DATE) AND CAST(? AS DATE)
+    </query>
+
+    <query name="FETCH_PENDING_ORDER_DETAIL_ENTITY_FOR_REPORT">
+        SELECT ih.CmpCode                                        AS cmpCode,
+               ih.DistrCode                                      AS distrCode,
+               ih.InvoiceNo                                      AS invoiceNo,
+               id.ProdCode                                       AS prodCode,
+               p.HSNCode                                         AS hsnCode,
+               p.ProdShortName                                   AS prodShortName,
+               p.ProdName                                        AS prodName,
+               id.ProdBatchCode                                  AS prodBatchCode,
+               id.TotalInvoiceQty                                AS totalInvoiceQty,
+               id.InvoiceQty1                                    AS invoiceQty1,
+               id.UomCode1                                       AS uomCode1,
+               id.InputStr                                       AS inputStr,
+               id.FreeQty                                        AS freeQty,
+               id.MRP                                            AS mrp,
+               id.SellRate                                       AS sellRate,
+               id.ActualSellRate                                 AS actualSellRate,
+               id.CashDiscAmt                                    AS cashDiscAmt,
+               id.DBDiscAmt                                      AS dbDiscAmt,
+               id.SchDiscAmt                                     AS schDiscAmt,
+               id.GrossAmt                                       AS grossAmt,
+               id.TaxAmt                                         AS taxAmt,
+               id.CGSTPerc                                       AS cgstPerc,
+               id.CGSTAmt                                        AS cgstAmt,
+               IF(g.UnionTerritoryFlag = 'N', id.SGSTPerc, 0.00) AS sgstPerc,
+               IF(g.UnionTerritoryFlag = 'N', id.SGSTAmt, 0.00)  AS sgstAmt,
+               IF(g.UnionTerritoryFlag = 'Y', id.SGSTPerc, 0.00) AS utgstPerc,
+               IF(g.UnionTerritoryFlag = 'Y', id.SGSTAmt, 0.00)  AS utgstAmt,
+               id.IGSTPerc                                       AS igstPerc,
+               id.IGSTAmt                                        AS igstAmt,
+               id.CessPerc                                       AS cessPerc,
+               id.CessAmt                                        AS cessAmt,
+               id.NetAmt                                         AS netAmt
+        FROM invoiceheader ih
+                 INNER JOIN invoicedetails id
+                            ON ih.CmpCode = id.CmpCode
+                                AND ih.Distrcode = id.Distrcode
+                                AND ih.InvoiceNo = id.InvoiceNo
+                 INNER JOIN product p
+                            ON id.ProdCode = p.ProdCode
+                                AND id.CmpCode = p.CmpCode
+                 INNER JOIN distributor d
+                            ON id.CmpCode = d.CmpCode
+                                AND id.DistrCode = d.DistrCode
+                 INNER JOIN gststatemaster g
+                            ON d.CmpCode = g.CmpCode
+                                AND d.GSTStateCode = g.GSTStateCode
+        WHERE ih.CmpCode = ?
+          AND ih.Distrcode = ?
+          AND ih.InvoiceDt BETWEEN CAST(? AS DATE) AND CAST(? AS DATE)
+    </query>
+</queries>
