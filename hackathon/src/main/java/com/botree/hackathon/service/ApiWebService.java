@@ -57,6 +57,22 @@ public class ApiWebService {
         }
     }
 
+    public void getGetAPI(final String url) throws URISyntaxException {
+        var restTemplate = new RestTemplate(getClientHttpRequestFactory());
+        var uri = new URI(url);
+        var headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        var token = login();
+        LOG.info("token :: {}", token);
+        headers.set("Authorization", "Bearer " + token);
+        var request = new HttpEntity<>(headers);
+        ResponseEntity<?> response = restTemplate.exchange(uri, HttpMethod.GET, request, Object.class);
+        if (response.getBody() != null) {
+            var entity = response.getBody();
+            LOG.info("post api response :: {} ", entity);
+        }
+    }
+
     /**
      * This method is used to configure the http timeout.
      * @return ClientHttpRequestFactory

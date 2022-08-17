@@ -7,11 +7,7 @@ import com.botree.hackathon.service.ReportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -66,4 +62,36 @@ public class ApiController {
         LOG.info("create adhoc pending delivery order info :: {} ", order.getOrder_id());
         reportService.createAdhocPendingDeliveryOrder(order);
     }
+    /**
+     * Method to create the delivery order.
+     * @param order order
+     */
+    @PostMapping("/delivery-order/create")
+    public void createPendingDeliveryOrder(@RequestBody final OrderHeaderEntity order) {
+        LOG.info("create pending delivery order info :: {} ", order.getOrder_id());
+        reportService.createPendingDeliveryOrder(order);
+    }
+
+    /**
+     * Method to create the adhoc delivery order.
+     * @param shipmentId Shipment Id
+     * @param courierId Courier Id
+     */
+    @GetMapping("/delivery-order/awb")
+    public void generateAwb(@RequestParam(value = "shipmentId") String shipmentId,@RequestParam(value = "courierId") String courierId){
+        LOG.info("generate awb - shipment Id :: {} ", shipmentId);
+        LOG.info("generate awb - courier Id :: {} ", courierId);
+        reportService.generateAwn(shipmentId,courierId);
+    }
+
+    @GetMapping("/delivery-order/serviceability")
+    public void getAvailableServices(){
+        reportService.getAvailableServices();
+    }
+
+    @PostMapping("/delivery-order/generate/pickup")
+    public void generatePickUp(@RequestBody String shipmentId){
+        reportService.generatePickUp(shipmentId);
+    }
+
 }

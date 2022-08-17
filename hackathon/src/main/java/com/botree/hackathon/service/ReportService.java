@@ -31,6 +31,22 @@ public class ReportService {
     /** shipmentUrl1. */
     @Value("${shipment.url.1}")
     private String shipmentUrl1;
+    /* shipment :: create api*/
+    @Value("${shipment.url.2}")
+    private String shipmentUrl2;
+    /* shipment :: pickup api */
+    @Value("${shipment.url.3}")
+    private String shipmentUrl3;
+    /* shipment :: generate awb */
+    @Value("${shipment.url.4}")
+    private String shipmentUrl4;
+    /* shipment :: servisablity spi */
+    @Value("${shipment.url.5}")
+    private String shipmentUrl5;
+    /* shipment :: generate pickup */
+    @Value("${shipment.url.6}")
+    private String shipmentUrl6;
+
     /** repository. */
     private final DAORepository repository;
     /** queryService. */
@@ -85,4 +101,49 @@ public class ReportService {
             throw new ServiceException(e);
         }
     }
+
+    /**
+     * Method to create pending delivery order.
+     * @param order order
+     */
+    public void createPendingDeliveryOrder(final OrderHeaderEntity order) {
+        try {
+            LOG.info("login :: {}", order.getOrder_id());
+            apiWebService.sendPostAPI(order, shipmentUrl2);
+        } catch (URISyntaxException e) {
+            throw new ServiceException(e);
+        }
+    }
+
+    /**
+     * Method to create awn ( Air way bill number)
+     * @param shipmentId Shipment Id
+     * @param courierId Courier Id
+     */
+    public void generateAwn(String shipmentId, String courierId){
+        try {
+            String object = "{ shipmentId : "+ shipmentId +", courierId : "+ courierId +" }";
+            LOG.info("report service : awb request :: {}", object);
+            apiWebService.sendPostAPI(object, shipmentUrl4);
+        } catch (URISyntaxException e) {
+            throw new ServiceException(e);
+        }
+    }
+    public void getAvailableServices(){
+        try {
+            apiWebService.getGetAPI(shipmentUrl5);
+        } catch (URISyntaxException e) {
+            throw new ServiceException(e);
+        }
+    }
+
+    public void generatePickUp(final String shipmentId){
+        try {
+            LOG.info("report service : generate pickup :: {}", shipmentId);
+            apiWebService.sendPostAPI(shipmentId,shipmentUrl6);
+        } catch (URISyntaxException e) {
+            throw new ServiceException(e);
+        }
+    }
+
 }
