@@ -1,15 +1,19 @@
 package com.botree.hackathon.controller;
 
 import com.botree.hackathon.model.DownloadModel;
+import com.botree.hackathon.model.OrderHeaderEntity;
 import com.botree.hackathon.model.ReportModel;
 import com.botree.hackathon.service.ReportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * API Controller to get all the request for data.
@@ -43,7 +47,7 @@ public class ApiController {
     }
 
     /**
-     * Method to fetch the bill for the users to print.
+     * Method to fetch the pending delivery order.
      * @param user user
      * @return download data
      */
@@ -51,5 +55,15 @@ public class ApiController {
     public DownloadModel downloadPendingDeliveryOrder(@RequestBody final ReportModel user) {
         LOG.info("pending delivery order info :: {} ", user.getDistrCode());
         return reportService.downloadPendingDeliveryOrder(user);
+    }
+
+    /**
+     * Method to create the adhoc delivery order.
+     * @param order order
+     */
+    @PostMapping("/delivery-order/create/adhoc")
+    public void createAdhocPendingDeliveryOrder(@RequestBody final OrderHeaderEntity order) {
+        LOG.info("create adhoc pending delivery order info :: {} ", order.getOrder_id());
+        reportService.createAdhocPendingDeliveryOrder(order);
     }
 }
