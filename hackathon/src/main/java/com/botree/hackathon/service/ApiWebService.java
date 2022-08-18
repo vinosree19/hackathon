@@ -57,7 +57,25 @@ public class ApiWebService {
         }
     }
 
-    public void getGetAPI(final String url) throws URISyntaxException {
+    public Object sendPostAPIReturnResponse(final Object obj, final String url) throws URISyntaxException {
+        var restTemplate = new RestTemplate(getClientHttpRequestFactory());
+        var uri = new URI(url);
+        var headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        var token = login();
+        LOG.info("token :: {}", token);
+        headers.set("Authorization", "Bearer " + token);
+        var request = new HttpEntity<>(obj, headers);
+        ResponseEntity<?> response = restTemplate.exchange(uri, HttpMethod.POST, request, Object.class);
+        if (response.getBody() != null) {
+            var entity = response.getBody();
+            LOG.info("post api response :: {} ", entity);
+            return entity;
+        }
+        return null;
+    }
+
+    public Object getGetAPI(final String url) throws URISyntaxException {
         var restTemplate = new RestTemplate(getClientHttpRequestFactory());
         var uri = new URI(url);
         var headers = new HttpHeaders();
@@ -70,7 +88,9 @@ public class ApiWebService {
         if (response.getBody() != null) {
             var entity = response.getBody();
             LOG.info("post api response :: {} ", entity);
+            return entity;
         }
+        return null;
     }
 
     /**

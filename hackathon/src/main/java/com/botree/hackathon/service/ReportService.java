@@ -83,8 +83,13 @@ public class ReportService {
                 PendingOrderDetailEntity.class, user.getCmpCode(), user.getDistrCode(), user.getStartDate(),
                 user.getEndDate()).stream().collect(Collectors.groupingBy(data -> data.getCmpCode()
                 + data.getDistrCode() + data.getInvoiceNo()));
-        headerList.forEach(data -> data.setBillPrintDetailList(detailsList.get(data.getCmpCode()
-                + data.getDistrCode() + data.getInvoiceNo())));
+
+        headerList.forEach(data -> {
+            data.setBillPrintDetailList(detailsList.get(data.getCmpCode()
+                    + data.getDistrCode() + data.getInvoiceNo()));
+
+//            data.setInvoiceDt();
+        });
         downloadModel.setPendingDeliveryOrder(Function.compress(headerList));
         return downloadModel;
     }
@@ -106,10 +111,10 @@ public class ReportService {
      * Method to create pending delivery order.
      * @param order order
      */
-    public void createPendingDeliveryOrder(final OrderHeaderEntity order) {
+    public Object createPendingDeliveryOrder(final OrderHeaderEntity order) {
         try {
             LOG.info("login :: {}", order.getOrder_id());
-            apiWebService.sendPostAPI(order, shipmentUrl2);
+            return apiWebService.sendPostAPIReturnResponse(order, shipmentUrl2);
         } catch (URISyntaxException e) {
             throw new ServiceException(e);
         }
@@ -120,27 +125,27 @@ public class ReportService {
      * @param shipmentId Shipment Id
      * @param courierId Courier Id
      */
-    public void generateAwn(String shipmentId, String courierId){
+    public Object generateAwn(String shipmentId, String courierId){
         try {
             String object = "{ shipmentId : "+ shipmentId +", courierId : "+ courierId +" }";
             LOG.info("report service : awb request :: {}", object);
-            apiWebService.sendPostAPI(object, shipmentUrl4);
+            return apiWebService.sendPostAPIReturnResponse(object, shipmentUrl4);
         } catch (URISyntaxException e) {
             throw new ServiceException(e);
         }
     }
-    public void getAvailableServices(){
+    public Object getAvailableServices(){
         try {
-            apiWebService.getGetAPI(shipmentUrl5);
+            return apiWebService.getGetAPI(shipmentUrl5);
         } catch (URISyntaxException e) {
             throw new ServiceException(e);
         }
     }
 
-    public void generatePickUp(final String shipmentId){
+    public Object generatePickUp(final String shipmentId){
         try {
             LOG.info("report service : generate pickup :: {}", shipmentId);
-            apiWebService.sendPostAPI(shipmentId,shipmentUrl6);
+            return apiWebService.sendPostAPIReturnResponse(shipmentId,shipmentUrl6);
         } catch (URISyntaxException e) {
             throw new ServiceException(e);
         }

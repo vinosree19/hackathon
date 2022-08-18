@@ -67,9 +67,9 @@ public class ApiController {
      * @param order order
      */
     @PostMapping("/delivery-order/create")
-    public void createPendingDeliveryOrder(@RequestBody final OrderHeaderEntity order) {
+    public Object createPendingDeliveryOrder(@RequestBody final OrderHeaderEntity order) {
         LOG.info("create pending delivery order info :: {} ", order.getOrder_id());
-        reportService.createPendingDeliveryOrder(order);
+        return reportService.createPendingDeliveryOrder(order);
     }
 
     /**
@@ -78,20 +78,20 @@ public class ApiController {
      * @param courierId Courier Id
      */
     @GetMapping("/delivery-order/awb")
-    public void generateAwb(@RequestParam(value = "shipmentId") String shipmentId,@RequestParam(value = "courierId") String courierId){
+    public Object generateAwb(@RequestParam(value = "shipmentId") String shipmentId,@RequestParam(value = "courierId") String courierId){
         LOG.info("generate awb - shipment Id :: {} ", shipmentId);
         LOG.info("generate awb - courier Id :: {} ", courierId);
-        reportService.generateAwn(shipmentId,courierId);
+        return reportService.generateAwn(shipmentId,courierId);
     }
 
     @GetMapping("/delivery-order/serviceability")
-    public void getAvailableServices(){
-        reportService.getAvailableServices();
+    public Object getAvailableServices(){
+        return reportService.getAvailableServices();
     }
 
     @PostMapping("/delivery-order/generate/pickup")
-    public void generatePickUp(@RequestBody String shipmentId){
-        reportService.generatePickUp(shipmentId);
+    public Object generatePickUp(@RequestBody String shipmentId){
+        return reportService.generatePickUp(shipmentId);
     }
 
 }
