@@ -2,7 +2,6 @@ package com.botree.hackathon.service;
 
 import com.botree.hackathon.constants.StringConstants;
 import com.botree.hackathon.dao.DAORepository;
-import com.botree.hackathon.exception.ServiceException;
 import com.botree.hackathon.model.DownloadModel;
 import com.botree.hackathon.model.OrderHeaderEntity;
 import com.botree.hackathon.model.PendingOrderDetailEntity;
@@ -12,10 +11,10 @@ import com.botree.hackathon.util.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.URISyntaxException;
 import java.util.stream.Collectors;
 
 /**
@@ -84,12 +83,8 @@ public class ReportService {
                 user.getEndDate()).stream().collect(Collectors.groupingBy(data -> data.getCmpCode()
                 + data.getDistrCode() + data.getInvoiceNo()));
 
-        headerList.forEach(data -> {
-            data.setBillPrintDetailList(detailsList.get(data.getCmpCode()
-                    + data.getDistrCode() + data.getInvoiceNo()));
-
-//            data.setInvoiceDt();
-        });
+        headerList.forEach(data -> data.setBillPrintDetailList(detailsList.get(data.getCmpCode()
+                + data.getDistrCode() + data.getInvoiceNo())));
         downloadModel.setPendingDeliveryOrder(Function.compress(headerList));
         return downloadModel;
     }
@@ -99,12 +94,8 @@ public class ReportService {
      * @param order order
      */
     public void createAdhocPendingDeliveryOrder(final OrderHeaderEntity order) {
-        try {
-            LOG.info("login :: {}", order.getOrder_id());
-            apiWebService.sendPostAPI(order, shipmentUrl1);
-        } catch (URISyntaxException e) {
-            throw new ServiceException(e);
-        }
+        LOG.info("login :: {}", order.getOrder_id());
+        apiWebService.sendAPI(order, shipmentUrl1, HttpMethod.POST);
     }
 
     /**
@@ -112,43 +103,40 @@ public class ReportService {
      * @param order order
      */
     public Object createPendingDeliveryOrder(final OrderHeaderEntity order) {
-        try {
-            LOG.info("login :: {}", order.getOrder_id());
-            return apiWebService.sendPostAPIReturnResponse(order, shipmentUrl2);
-        } catch (URISyntaxException e) {
-            throw new ServiceException(e);
-        }
+        LOG.info("login :: {}", order.getOrder_id());
+        return apiWebService.sendAPI(order, shipmentUrl2, HttpMethod.POST);
     }
 
     /**
      * Method to create awn ( Air way bill number)
      * @param shipmentId Shipment Id
-     * @param courierId Courier Id
+     * @param courierId  Courier Id
      */
-    public Object generateAwn(String shipmentId, String courierId){
-        try {
-            String object = "{ shipmentId : "+ shipmentId +", courierId : "+ courierId +" }";
-            LOG.info("report service : awb request :: {}", object);
-            return apiWebService.sendPostAPIReturnResponse(object, shipmentUrl4);
-        } catch (URISyntaxException e) {
-            throw new ServiceException(e);
-        }
-    }
-    public Object getAvailableServices(){
-        try {
-            return apiWebService.getGetAPI(shipmentUrl5);
-        } catch (URISyntaxException e) {
-            throw new ServiceException(e);
-        }
+    public Object generateAwn(final String shipmentId, final String courierId) {
+        var url = shipmentUrl4 + "?shipment_id=" + shipmentId + "&courier_id=" + courierId;
+        LOG.info("service : awb request :: {}", url);
+        return apiWebService.sendAPI(null, url, HttpMethod.POST);
     }
 
-    public Object generatePickUp(final String shipmentId){
-        try {
-            LOG.info("report service : generate pickup :: {}", shipmentId);
-            return apiWebService.sendPostAPIReturnResponse(shipmentId,shipmentUrl6);
-        } catch (URISyntaxException e) {
-            throw new ServiceException(e);
-        }
+    /**
+     * Method to get the available services.
+     * @param orderId orderId
+     * @return obj
+     */
+    public Object getAvailableServices(final String orderId) {
+        var url = shipmentUrl5 + "/?order_id=" + orderId;
+        LOG.info("service : available service request :: {}", url);
+        return apiWebService.sendAPI(null, shipmentUrl5, HttpMethod.GET);
     }
 
+    /**
+     * Method to generate the pick up.
+     * @param shipmentId shipmentId
+     * @return obj
+     */
+    public Object generatePickUp(final String shipmentId) {
+        var url = shipmentUrl6 + "/?shipment_id=" + shipmentId;
+        LOG.info("report service : generate pickup :: {}", url);
+        return apiWebService.sendAPI(null, shipmentUrl6, HttpMethod.POST);
+    }
 }

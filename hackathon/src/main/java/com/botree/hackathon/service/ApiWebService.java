@@ -1,5 +1,6 @@
 package com.botree.hackathon.service;
 
+import com.botree.hackathon.exception.ServiceException;
 import com.botree.hackathon.model.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,57 +39,29 @@ public class ApiWebService {
 
     /**
      * Method to call post api.
-     * @param obj obj
-     * @throws URISyntaxException URISyntaxException
+     * @param obj    obj
+     * @param url    url
+     * @param method method
      */
-    public void sendPostAPI(final Object obj, final String url) throws URISyntaxException {
-        var restTemplate = new RestTemplate(getClientHttpRequestFactory());
-        var uri = new URI(url);
-        var headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        var token = login();
-        LOG.info("token :: {}", token);
-        headers.set("Authorization", "Bearer " + token);
-        var request = new HttpEntity<>(obj, headers);
-        ResponseEntity<?> response = restTemplate.exchange(uri, HttpMethod.POST, request, Object.class);
-        if (response.getBody() != null) {
-            var entity = response.getBody();
-            LOG.info("post api response :: {} ", entity);
-        }
-    }
-
-    public Object sendPostAPIReturnResponse(final Object obj, final String url) throws URISyntaxException {
-        var restTemplate = new RestTemplate(getClientHttpRequestFactory());
-        var uri = new URI(url);
-        var headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        var token = login();
-        LOG.info("token :: {}", token);
-        headers.set("Authorization", "Bearer " + token);
-        var request = new HttpEntity<>(obj, headers);
-        ResponseEntity<?> response = restTemplate.exchange(uri, HttpMethod.POST, request, Object.class);
-        if (response.getBody() != null) {
-            var entity = response.getBody();
-            LOG.info("post api response :: {} ", entity);
-            return entity;
-        }
-        return null;
-    }
-
-    public Object getGetAPI(final String url) throws URISyntaxException {
-        var restTemplate = new RestTemplate(getClientHttpRequestFactory());
-        var uri = new URI(url);
-        var headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        var token = login();
-        LOG.info("token :: {}", token);
-        headers.set("Authorization", "Bearer " + token);
-        var request = new HttpEntity<>(headers);
-        ResponseEntity<?> response = restTemplate.exchange(uri, HttpMethod.GET, request, Object.class);
-        if (response.getBody() != null) {
-            var entity = response.getBody();
-            LOG.info("post api response :: {} ", entity);
-            return entity;
+    public Object sendAPI(final Object obj, final String url, final HttpMethod method) {
+        try {
+            var restTemplate = new RestTemplate(getClientHttpRequestFactory());
+            var uri = new URI(url);
+            var headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            var token = login();
+            LOG.info("token :: {}", token);
+            headers.set("Authorization", "Bearer " + token);
+            var request = new HttpEntity<>(obj, headers);
+            ResponseEntity<?> response = restTemplate.exchange(uri, method, request, Object.class);
+            if (response.getBody() != null) {
+                var entity = response.getBody();
+                LOG.info("api response :: {} ", entity);
+                return entity;
+            }
+        } catch (Exception e) {
+            LOG.error("uri exception :: ", e);
+            throw new ServiceException(e);
         }
         return null;
     }

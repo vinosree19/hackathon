@@ -6,10 +6,12 @@ import com.botree.hackathon.model.ReportModel;
 import com.botree.hackathon.service.ReportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * API Controller to get all the request for data.
@@ -62,6 +64,7 @@ public class ApiController {
         LOG.info("create adhoc pending delivery order info :: {} ", order.getOrder_id());
         reportService.createAdhocPendingDeliveryOrder(order);
     }
+
     /**
      * Method to create the delivery order.
      * @param order order
@@ -73,24 +76,35 @@ public class ApiController {
     }
 
     /**
-     * Method to create the adhoc delivery order.
-     * @param shipmentId Shipment Id
-     * @param courierId Courier Id
+     * Method to call awb service.
+     * @param shipmentId shipmentId
+     * @param courierId  shipmentId
      */
     @GetMapping("/delivery-order/awb")
-    public Object generateAwb(@RequestParam(value = "shipmentId") String shipmentId,@RequestParam(value = "courierId") String courierId){
-        LOG.info("generate awb - shipment Id :: {} ", shipmentId);
-        LOG.info("generate awb - courier Id :: {} ", courierId);
-        return reportService.generateAwn(shipmentId,courierId);
+    public Object generateAwb(@RequestParam(value = "shipment_id") String shipmentId,
+                              @RequestParam(value = "courier_id") String courierId) {
+        LOG.info("call awb service :: {}:: {} ", shipmentId, courierId);
+        return reportService.generateAwn(shipmentId, courierId);
     }
 
+    /**
+     * Method to call serviceability api.
+     * @param orderId orderId
+     * @return obj
+     */
     @GetMapping("/delivery-order/serviceability")
-    public Object getAvailableServices(){
-        return reportService.getAvailableServices();
+    public Object getAvailableServices(@RequestParam(value = "order_id") String orderId) {
+        LOG.info("call serviceability service :: {} ", orderId);
+        return reportService.getAvailableServices(orderId);
     }
 
-    @PostMapping("/delivery-order/generate/pickup")
-    public Object generatePickUp(@RequestBody String shipmentId){
+    /**
+     * Method to call serviceability api.
+     * @param shipmentId shipmentId
+     * @return obj
+     */
+    @GetMapping("/delivery-order/generate/pickup")
+    public Object generatePickUp(@RequestParam(value = "shipment_id") String shipmentId) {
         return reportService.generatePickUp(shipmentId);
     }
 
