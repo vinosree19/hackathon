@@ -126,7 +126,7 @@ public class ReportService {
     public Object getAvailableServices(final String orderId) {
         var url = shipmentUrl5 + "/?order_id=" + orderId;
         LOG.info("service : available service request :: {}", url);
-        return apiWebService.sendAPI(null, shipmentUrl5, HttpMethod.GET);
+        return apiWebService.sendAPI(null, url, HttpMethod.GET);
     }
 
     /**
@@ -137,6 +137,6 @@ public class ReportService {
     public Object generatePickUp(final String shipmentId) {
         var url = shipmentUrl6 + "/?shipment_id=" + shipmentId;
         LOG.info("report service : generate pickup :: {}", url);
-        return apiWebService.sendAPI(null, shipmentUrl6, HttpMethod.POST);
+        return apiWebService.sendAPI(null, url, HttpMethod.POST);
     }
 }
