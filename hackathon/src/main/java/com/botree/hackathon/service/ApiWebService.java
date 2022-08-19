@@ -1,6 +1,8 @@
 package com.botree.hackathon.service;
 
+import com.botree.hackathon.exception.BadRequestException;
 import com.botree.hackathon.exception.ServiceException;
+import com.botree.hackathon.exception.UnAuthorizedException;
 import com.botree.hackathon.model.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -44,6 +47,7 @@ public class ApiWebService {
      * @param method method
      */
     public Object sendAPI(final Object obj, final String url, final HttpMethod method) {
+        ResponseEntity<?> response = null;
         try {
             var restTemplate = new RestTemplate(getClientHttpRequestFactory());
             var uri = new URI(url);
@@ -53,15 +57,23 @@ public class ApiWebService {
             LOG.info("token :: {}", token);
             headers.set("Authorization", "Bearer " + token);
             var request = new HttpEntity<>(obj, headers);
-            ResponseEntity<?> response = restTemplate.exchange(uri, method, request, Object.class);
+            response = restTemplate.exchange(uri, method, request, Object.class);
             if (response.getBody() != null) {
                 var entity = response.getBody();
                 LOG.info("api response :: {} ", entity);
                 return entity;
             }
         } catch (Exception e) {
-            LOG.error("uri exception :: ", e);
-            throw new ServiceException(e);
+            LOG.error("uri exception :: {}", e.getMessage());
+            if (response != null && HttpStatus.BAD_REQUEST.equals(response.getStatusCode())) {
+                throw new BadRequestException(e.getMessage());
+            } else if (response != null && HttpStatus.UNAUTHORIZED.equals(response.getStatusCode())) {
+                throw new UnAuthorizedException(e.getMessage());
+            } else if (response != null && HttpStatus.UNPROCESSABLE_ENTITY.equals(response.getStatusCode())) {
+                throw new UnAuthorizedException(e.getMessage());
+            } else {
+                throw new ServiceException(e.getMessage());
+            }
         }
         return null;
     }
