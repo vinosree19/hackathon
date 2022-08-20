@@ -4,6 +4,9 @@ import com.botree.hackathon.exception.BadRequestException;
 import com.botree.hackathon.exception.ServiceException;
 import com.botree.hackathon.exception.UnAuthorizedException;
 import com.botree.hackathon.model.UserModel;
+import com.botree.hackathon.util.DataInstance;
+import org.apache.http.util.TextUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,8 +29,9 @@ import java.net.URISyntaxException;
  * @author vinodkumar.a
  */
 @Service
-public class ApiWebService {
+public class ApiWebService implements DataInstance {
 
+    private static final String TOKEN = "token";
     /** LOG. */
     private static final Logger LOG = LoggerFactory.getLogger(ApiWebService.class);
     /** shipmentUsername. */
@@ -95,18 +99,23 @@ public class ApiWebService {
      * @throws URISyntaxException URISyntaxException
      */
     private String login() throws URISyntaxException {
-        var restTemplate = new RestTemplate(getClientHttpRequestFactory());
-        var uri = new URI(shipmentLoginUrl);
-        var headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        var user = new UserModel();
-        user.setEmail(shipmentUsername);
-        user.setPassword(shipmentPassword);
-        var request = new HttpEntity<>(user, headers);
-        ResponseEntity<?> response = restTemplate.exchange(uri, HttpMethod.POST, request, UserModel.class);
-        if (response.getBody() != null) {
-            var model = (UserModel) response.getBody();
-            return model.getToken();
+        if (TextUtils.isEmpty(getApplicationData(TOKEN))) {
+            var restTemplate = new RestTemplate(getClientHttpRequestFactory());
+            var uri = new URI(shipmentLoginUrl);
+            var headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            var user = new UserModel();
+            user.setEmail(shipmentUsername);
+            user.setPassword(shipmentPassword);
+            var request = new HttpEntity<>(user, headers);
+            ResponseEntity<?> response = restTemplate.exchange(uri, HttpMethod.POST, request, UserModel.class);
+            if (response.getBody() != null) {
+                var model = (UserModel) response.getBody();
+                setApplicationData(TOKEN, model.getToken());
+                return model.getToken();
+            }
+        }else {
+            return getApplicationData(TOKEN);
         }
         return null;
     }
