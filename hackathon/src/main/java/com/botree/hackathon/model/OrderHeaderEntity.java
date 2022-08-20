@@ -74,13 +74,13 @@ public class OrderHeaderEntity extends AbstractEntity {
     /** sub_total. */
     private Double sub_total;
     /** length. */
-    private Integer length;
+    private Double length;
     /** breadth. */
-    private Integer breadth;
+    private Double breadth;
     /** height. */
-    private Integer height;
+    private Double height;
     /** weight. */
-    private Integer weight;
+    private Double weight;
     /** order_items. */
     private List<OrderDetailEntity> order_items;
 
@@ -535,56 +535,56 @@ public class OrderHeaderEntity extends AbstractEntity {
     /**
      * @return the length
      */
-    public final Integer getLength() {
+    public final Double getLength() {
         return length;
     }
 
     /**
      * @param lengthIn the length to set
      */
-    public final void setLength(final Integer lengthIn) {
+    public final void setLength(final Double lengthIn) {
         length = lengthIn;
     }
 
     /**
      * @return the breadth
      */
-    public final Integer getBreadth() {
+    public final Double getBreadth() {
         return breadth;
     }
 
     /**
      * @param breadthIn the breadth to set
      */
-    public final void setBreadth(final Integer breadthIn) {
+    public final void setBreadth(final Double breadthIn) {
         breadth = breadthIn;
     }
 
     /**
      * @return the height
      */
-    public final Integer getHeight() {
+    public final Double getHeight() {
         return height;
     }
 
     /**
      * @param heightIn the height to set
      */
-    public final void setHeight(final Integer heightIn) {
+    public final void setHeight(final Double heightIn) {
         height = heightIn;
     }
 
     /**
      * @return the weight
      */
-    public final Integer getWeight() {
+    public final Double getWeight() {
         return weight;
     }
 
     /**
      * @param weightIn the weight to set
      */
-    public final void setWeight(final Integer weightIn) {
+    public final void setWeight(final Double weightIn) {
         weight = weightIn;
     }
 

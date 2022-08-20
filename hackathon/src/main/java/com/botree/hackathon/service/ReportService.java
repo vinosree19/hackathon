@@ -93,9 +93,9 @@ public class ReportService {
      * Method to create adhoc pending delivery order.
      * @param order order
      */
-    public void createAdhocPendingDeliveryOrder(final OrderHeaderEntity order) {
+    public Object createAdhocPendingDeliveryOrder(final OrderHeaderEntity order) {
         LOG.info("login :: {}", order.getOrder_id());
-        apiWebService.sendAPI(order, shipmentUrl1, HttpMethod.POST);
+        return apiWebService.sendAPI(order, shipmentUrl1, HttpMethod.POST);
     }
 
     /**

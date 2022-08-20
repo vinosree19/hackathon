@@ -60,9 +60,9 @@ public class ApiController {
      * @param order order
      */
     @PostMapping("/delivery-order/create/adhoc")
-    public void createAdhocPendingDeliveryOrder(@RequestBody final OrderHeaderEntity order) {
+    public Object createAdhocPendingDeliveryOrder(@RequestBody final OrderHeaderEntity order) {
         LOG.info("create adhoc pending delivery order info :: {} ", order.getOrder_id());
-        reportService.createAdhocPendingDeliveryOrder(order);
+        return reportService.createAdhocPendingDeliveryOrder(order);
     }
 
     /**
