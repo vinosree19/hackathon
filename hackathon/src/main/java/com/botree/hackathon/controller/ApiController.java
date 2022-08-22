@@ -76,36 +76,62 @@ public class ApiController {
     }
 
     /**
-     * Method to call awb service.
-     * @param shipmentId shipmentId
-     * @param courierId  shipmentId
-     */
-    @GetMapping("/delivery-order/awb")
-    public Object generateAwb(@RequestParam(value = "shipment_id") String shipmentId,
-                              @RequestParam(value = "courier_id") String courierId) {
-        LOG.info("call awb service :: {}:: {} ", shipmentId, courierId);
-        return reportService.generateAwn(shipmentId, courierId);
-    }
-
-    /**
      * Method to call serviceability api.
-     * @param orderId orderId
+     * @param invoice_id orderId
      * @return obj
      */
     @GetMapping("/delivery-order/serviceability")
-    public Object getAvailableServices(@RequestParam(value = "order_id") String orderId) {
-        LOG.info("call serviceability service :: {} ", orderId);
-        return reportService.getAvailableServices(orderId);
+    public Object getAvailableServices(@RequestParam(value = "invoice_id") String invoice_id) {
+        LOG.info("call serviceability service :: {} ", invoice_id);
+        return reportService.getAvailableServices(invoice_id);
+    }
+
+
+    /**
+     * Method to call selected service
+     * @param invoice_id invoiceId
+     * @return obj
+     */
+    @PostMapping("/delivery-order/selectService")
+    public Object selectedService(@RequestParam(value = "invoice_id") String invoice_id,
+                                  @RequestParam(value = "courier_id") String courierId) {
+        LOG.info("invoice id :: {} ", invoice_id);
+        return reportService.selectServiceForOrder(invoice_id, courierId);
     }
 
     /**
      * Method to call serviceability api.
-     * @param shipmentId shipmentId
+     * @param invoice_id shipmentId
      * @return obj
      */
     @GetMapping("/delivery-order/generate/pickup")
-    public Object generatePickUp(@RequestParam(value = "shipment_id") String shipmentId) {
-        return reportService.generatePickUp(shipmentId);
+    public Object generatePickUp(@RequestParam(value = "invoice_id") String invoice_id) {
+        return reportService.generatePickUp(invoice_id);
+    }
+
+    /**
+     * Method to track the order with awb code
+     * @param invoice_id invoice_id
+     * @return obj
+     */
+    @GetMapping("/delivery-order/tracking/awb")
+    public Object getTrackingDetail(@RequestParam(value = "invoice_id") String invoice_id){
+        return reportService.getAwbTrackingDetails(invoice_id);
+    }
+
+    /**
+     * Method to track the order with shipmentId
+     * @param invoice_id invoice_id
+     * @return obj
+     */
+    @GetMapping("/delivery-order/tracking/shipmentId")
+    public Object getTrackingWithShipmentIdDetail(@RequestParam(value = "invoice_id") String invoice_id){
+        return reportService.getAwbTrackingWithShipmentIdDetails(invoice_id);
+    }
+
+    @PostMapping("/delivery-order/cancel")
+    public Object cancelPendingDeliveryOrder(@RequestParam(value = "invoice_id") String invoice_id){
+        return reportService.cancelPendingDeliveryOrder(invoice_id);
     }
 
 }

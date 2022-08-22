@@ -2,19 +2,22 @@ package com.botree.hackathon.service;
 
 import com.botree.hackathon.constants.StringConstants;
 import com.botree.hackathon.dao.DAORepository;
-import com.botree.hackathon.model.DownloadModel;
-import com.botree.hackathon.model.OrderHeaderEntity;
-import com.botree.hackathon.model.PendingOrderDetailEntity;
-import com.botree.hackathon.model.PendingOrderHeaderEntity;
-import com.botree.hackathon.model.ReportModel;
+import com.botree.hackathon.model.*;
+import com.botree.hackathon.util.DataInstance;
 import com.botree.hackathon.util.Function;
+import org.apache.http.util.TextUtils;
+import org.json.HTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -23,7 +26,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Transactional
-public class ReportService {
+public class ReportService implements DataInstance {
 
     /** LOG. */
     private static final Logger LOG = LoggerFactory.getLogger(ReportService.class);
@@ -45,6 +48,15 @@ public class ReportService {
     /* shipment :: generate pickup */
     @Value("${shipment.url.6}")
     private String shipmentUrl6;
+    /* Awb Tracking api*/
+    @Value("${shipment.url.7}")
+    private String shipmentUrl7;
+    /* tracking with shipment id */
+    @Value("${shipment.url.8}")
+    private String shipmentUrl8;
+    /* cancel created order */
+    @Value("${shipment.url.9}")
+    private String shipmentUrl9;
 
     /** repository. */
     private final DAORepository repository;
@@ -95,7 +107,29 @@ public class ReportService {
      */
     public Object createAdhocPendingDeliveryOrder(final OrderHeaderEntity order) {
         LOG.info("login :: {}", order.getOrder_id());
-        return apiWebService.sendAPI(order, shipmentUrl1, HttpMethod.POST);
+        var invoiceId = order.getOrder_id();
+        Object response = apiWebService.sendAPI(order, shipmentUrl1, HttpMethod.POST);
+        LinkedHashMap<String , Object> result = (LinkedHashMap<String, Object>) response;
+        var orderId = result.get("order_id");
+        var shipmentId = result.get("shipment_id");
+        var status = result.get("status");
+
+        order.setOrder_id(String.valueOf(orderId));
+        order.setInvoice_id(invoiceId);
+        repository.insert(queryService.get(StringConstants.INSERT_INTO_DELIVERY_ORDER_TABLE),order);
+
+        DeliveryOrderEntity deliveryOrderEntity =  new DeliveryOrderEntity();
+        deliveryOrderEntity.setOrder_id(String.valueOf(orderId));
+        deliveryOrderEntity.setShipment_id(String.valueOf(shipmentId));
+        deliveryOrderEntity.setInvoice_id(invoiceId);
+        deliveryOrderEntity.setStatus(String.valueOf(status));
+        deliveryOrderEntity.setAwb_code("");
+        deliveryOrderEntity.setCourier_code("");
+        repository.insert(queryService.get(StringConstants.INSERT_INTO_DELIVERY_ORDER_DETAIL_TABLE), deliveryOrderEntity);
+
+//        }
+        return response;
+//        return apiWebService.sendAPI(order, shipmentUrl1, HttpMethod.POST);
     }
 
     /**
@@ -104,8 +138,76 @@ public class ReportService {
      */
     public Object createPendingDeliveryOrder(final OrderHeaderEntity order) {
         LOG.info("login :: {}", order.getOrder_id());
-        return apiWebService.sendAPI(order, shipmentUrl2, HttpMethod.POST);
+
+        var invoiceId = order.getOrder_id();
+        Object response = apiWebService.sendAPI(order, shipmentUrl2, HttpMethod.POST);
+        return response;
+//        return apiWebService.sendAPI(order, shipmentUrl2, HttpMethod.POST);
     }
+
+
+    /**
+     * Method to get the available services.
+     * @param invoiceId orderId
+     * @return obj
+     */
+    public Object getAvailableServices(final String invoiceId) {
+        Object response = null;
+        if (!TextUtils.isEmpty(invoiceId)) {
+            MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+            mapSqlParameterSource.addValue("invoice_id",invoiceId);
+            var orderModel = repository.fetchData(queryService.get(StringConstants.GET_ORDER_ID_BY_INVOICE_ID_FROM_DELIVERY_ORDER_DETAIL_TABLE),
+                    mapSqlParameterSource,DeliveryOrderEntity.class);
+            if (orderModel.isEmpty() || TextUtils.isEmpty(orderModel.get(0).getOrder_id())){
+                return errorMessage("201","No Order Created For This invoice");
+            }
+            var url = shipmentUrl5 + "/?order_id=" + orderModel.get(0).getOrder_id();
+            LOG.info("service : available service request :: {}", url);
+            response = apiWebService.sendAPI(null, url, HttpMethod.GET);
+        }
+        return response;
+    }
+
+    /**
+     * Method to select the service for the order.
+     * @param invoiceId invoiceId
+     * @param courierId
+     * @return obj
+     */
+    public Object selectServiceForOrder(final String invoiceId, String courierId) {
+
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+        mapSqlParameterSource.addValue("invoice_id",invoiceId);
+        var orderModel = repository.fetchData(queryService.get(StringConstants.GET_ORDER_ID_SHIPMENT_ID_BY_INVOICE_ID_FROM_DELIVERY_ORDER_DETAIL_TABLE),
+                mapSqlParameterSource,DeliveryOrderEntity.class);
+        if (orderModel.isEmpty() || TextUtils.isEmpty(orderModel.get(0).getOrder_id())){
+            return errorMessage("201","No Order Created For This invoice");
+        }
+        MapSqlParameterSource updateCourierId = new MapSqlParameterSource();
+        updateCourierId.addValue("courier_code",courierId);
+        updateCourierId.addValue("invoice_id",invoiceId);
+        var orderDate = repository.updateStatus(queryService.get(StringConstants.UPDATE_COURIER_CODE_IN_DELIVERY_ORDER_DETAIL_TABLE),
+                updateCourierId);
+        var awbRes = generateAwn(orderModel.get(0).getShipment_id(), orderModel.get(0).getCourier_code());
+        LinkedHashMap<String, Object> result = (LinkedHashMap<String, Object>) awbRes;
+        if (result.containsValue("status_code")){
+            return awbRes;
+        }
+        if (result.containsValue("response")) {
+            LinkedHashMap<String, Object> item = (LinkedHashMap<String, Object>) result.get("response");
+            if (result.containsValue("awb_code")) {
+                var awb_code = item.get("awb_code");
+                MapSqlParameterSource updateAwbCode = new MapSqlParameterSource();
+                updateAwbCode.addValue("awb_code",awb_code);
+                updateAwbCode.addValue("invoice_id",invoiceId);
+                repository.updateStatus(queryService.get(StringConstants.UPDATE_AWB_ORDER_IN_DELIVERY_ORDER_DETAIL_TABLE),
+                        updateAwbCode);
+            }
+        }
+
+        return awbRes;
+    }
+
 
     /**
      * Method to create awn ( Air way bill number)
@@ -118,25 +220,101 @@ public class ReportService {
         return apiWebService.sendAPI(null, url, HttpMethod.POST);
     }
 
-    /**
-     * Method to get the available services.
-     * @param orderId orderId
-     * @return obj
-     */
-    public Object getAvailableServices(final String orderId) {
-        var url = shipmentUrl5 + "/?order_id=" + orderId;
-        LOG.info("service : available service request :: {}", url);
-        return apiWebService.sendAPI(null, url, HttpMethod.GET);
-    }
 
     /**
      * Method to generate the pick up.
-     * @param shipmentId shipmentId
+     * @param invoiceId invoiceId
      * @return obj
      */
-    public Object generatePickUp(final String shipmentId) {
-        var url = shipmentUrl6 + "/?shipment_id=" + shipmentId;
+    public Object generatePickUp(final String invoiceId) {
+        var orderModel =getCurrentOrder(invoiceId);
+        if (orderModel.isEmpty() || TextUtils.isEmpty(orderModel.get(0).getOrder_id())){
+            return errorMessage("201","No Order Created For This invoice");
+        }
+        if (TextUtils.isEmpty(orderModel.get(0).getShipment_id())){
+            return errorMessage("201","No Shipment Id found !!");
+        }
+        if (orderModel.get(0).getStatus().equals("CANCELED")){
+            return errorMessage("201","Order Is Already Cancelled !!");
+        }
+        var url = shipmentUrl6 + "/?shipment_id=" + orderModel.get(0).getShipment_id();
+
         LOG.info("report service : generate pickup :: {}", url);
         return apiWebService.sendAPI(null, url, HttpMethod.POST);
+    }
+
+    /*
+    * Method use to track the orders with awb code
+    * @param invoiceId invoiceId
+    * */
+    public Object getAwbTrackingDetails(String invoiceId){
+        var orderModel = getCurrentOrder(invoiceId);
+        if (orderModel.isEmpty() || TextUtils.isEmpty(orderModel.get(0).getOrder_id())){
+            return errorMessage("201","No Order Created For This invoice");
+        }
+        if (TextUtils.isEmpty(orderModel.get(0).getAwb_code())){
+            return errorMessage("201","Air Way bill Not Found !!");
+        }
+        var url = shipmentUrl7 + orderModel.get(0).getAwb_code();
+        return apiWebService.sendAPI(null,url, HttpMethod.GET);
+    }
+
+    /*
+     * Method use to track the orders with shipment id
+     * @param invoiceId invoiceId
+     * */
+    public Object getAwbTrackingWithShipmentIdDetails(String invoiceId){
+        var orderModel = getCurrentOrder(invoiceId);
+        if (orderModel.isEmpty() || TextUtils.isEmpty(orderModel.get(0).getOrder_id())){
+            return errorMessage("201","No Order Created For This invoice");
+        }
+        if (TextUtils.isEmpty(orderModel.get(0).getShipment_id())){
+            return errorMessage("201","Shipment id Not Found !!");
+        }
+        var url = shipmentUrl8 + orderModel.get(0).getShipment_id();
+        return apiWebService.sendAPI(null,url, HttpMethod.GET);
+    }
+    /*
+    * Method to cancel the order
+    * @param invoiceId invoiceId
+    * */
+    public Object cancelPendingDeliveryOrder(final String invoiceId){
+        var orderModel = getCurrentOrder(invoiceId);
+        if (orderModel.isEmpty() || TextUtils.isEmpty(orderModel.get(0).getOrder_id())){
+            return errorMessage("201","No Order Found !!");
+        }
+        if (orderModel.get(0).getStatus().equals("CANCELED")){
+            return errorMessage("201","This Order Is Already Cancelled !!");
+        }
+        HashMap<String , int[]> cancelRequest = new HashMap<>();
+        int[] orderIds = new int[] {Integer.parseInt(orderModel.get(0).getOrder_id())};
+        cancelRequest.put("ids",orderIds);
+        Object response = apiWebService.sendAPI(cancelRequest,shipmentUrl9, HttpMethod.POST);
+
+        LinkedHashMap<String, Object> result = (LinkedHashMap<String, Object>) response;
+        if ((int)result.get("status_code") == 200) {
+            MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+            mapSqlParameterSource.addValue("status", "CANCELED");
+            mapSqlParameterSource.addValue("invoice_id", invoiceId);
+            repository.updateStatus(queryService.get(StringConstants.UPDATE_STATUS_IN_DELIVERY_ORDER_DETAIL_TABLE),
+                    mapSqlParameterSource);
+        }
+        return response;
+    }
+
+    /*
+    * Method use to generate error message
+    * */
+    public Object errorMessage(String status, String message){
+        HashMap<String,String> errorResponse =  new HashMap<>();
+        errorResponse.put("status",status);
+        errorResponse.put("message",message);
+        return errorResponse;
+    }
+    public List<DeliveryOrderEntity> getCurrentOrder(String invoiceId){
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+        mapSqlParameterSource.addValue("invoice_id",invoiceId);
+        return repository.fetchData(queryService.get(StringConstants.FETCH_ORDER_VALUE_FROM_DELIVERY_ORDER_DETAIL_TABLE),
+                mapSqlParameterSource,DeliveryOrderEntity.class);
     }
 }

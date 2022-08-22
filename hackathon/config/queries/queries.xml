@@ -98,4 +98,51 @@
           AND ih.Distrcode = ?
           AND ih.InvoiceDt BETWEEN CAST(? AS DATE) AND CAST(? AS DATE)
     </query>
+    <query name="INSERT_INTO_DELIVERY_ORDER_TABLE" >
+        INSERT INTO deliveryordertable (shipping_charges,billing_last_name,billing_phone,giftwrap_charges,total_discount,shipping_state,breadth,
+        shipping_city,shipping_phone,billing_customer_name,billing_address,shipping_address_2,shipping_is_billing,billing_state,billing_address_2,billing_email,shipping_address,
+        payment_method,height,pickup_location,shipping_customer_name,billing_country,length,weight,order_date,billing_city,shipping_pincode,shipping_email,billing_pincode,sub_total,shipping_last_name,
+        comment,order_id,channel_id,shipping_country,transaction_charges,invoice_id)
+        values  (:shipping_charges,:billing_last_name,:billing_phone,:giftwrap_charges,:total_discount,:shipping_state,:breadth,
+        :shipping_city,:shipping_phone,:billing_customer_name,:billing_address,:shipping_address_2,:shipping_is_billing,:billing_state,:billing_address_2,:billing_email,:shipping_address,
+        :payment_method,:height,:pickup_location,:shipping_customer_name,:billing_country,:length,weight,:order_date,:billing_city,:shipping_pincode,:shipping_email,:billing_pincode,:sub_total,:shipping_last_name,
+        :comment,:order_id,:channel_id,:shipping_country,:transaction_charges,:invoice_id)
+    </query>
+    <query name="GET_ORDER_ID_BY_INVOICE_ID_FROM_DELIVERY_ORDER_DETAIL_TABLE" >
+        select order_id from delivery_order_details_table where invoice_id = :invoice_id
+    </query>
+    <query name="GET_ORDER_ID_SHIPMENT_ID_BY_INVOICE_ID_FROM_DELIVERY_ORDER_DETAIL_TABLE" >
+        select order_id, shipment_id from delivery_order_details_table where invoice_id = :invoice_id
+    </query>
+    <query name="FETCH_ORDER_VALUE_FROM_DELIVERY_ORDER_DETAIL_TABLE" >
+        select * from delivery_order_details_table where invoice_id = :invoice_id
+    </query>
+    <query  name="UPDATE_COURIER_CODE_IN_DELIVERY_ORDER_DETAIL_TABLE"  >
+        UPDATE delivery_order_details_table
+        SET
+        courier_code = :courier_code
+        WHERE
+        invoice_id = :invoice_id
+    </query>
+    <query  name="UPDATE_STATUS_IN_DELIVERY_ORDER_DETAIL_TABLE"  >
+        UPDATE delivery_order_details_table
+        SET
+        status = :status
+        WHERE
+        invoice_id = :invoice_id
+    </query>
+    <query  name="UPDATE_AWB_ORDER_IN_DELIVERY_ORDER_DETAIL_TABLE"  >
+        UPDATE delivery_order_details_table
+        SET
+        awb_code = :awb_code
+        WHERE
+        invoice_id = :invoice_id
+    </query>
+    <query name="FETCH_STATUS_FROM_DELIVERY_ORDER_TABLE" >
+        select status from delivery_order_details_table where invoice_id = :invoice_id
+    </query>
+    <query name="INSERT_INTO_DELIVERY_ORDER_DETAIL_TABLE">
+        INSERT INTO delivery_order_details_table (order_id,invoice_id,shipment_id,awb_code,courier_code,status)
+        values (:order_id,:invoice_id,:shipment_id,:awb_code,:courier_code,:status)
+    </query>
 </queries>

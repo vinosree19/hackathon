@@ -84,6 +84,8 @@ public class OrderHeaderEntity extends AbstractEntity {
     /** order_items. */
     private List<OrderDetailEntity> order_items;
 
+    private String invoice_id;
+
     /**
      * @return the order_id
      */
@@ -600,5 +602,13 @@ public class OrderHeaderEntity extends AbstractEntity {
      */
     public final void setOrder_items(final List<OrderDetailEntity> order_itemsIn) {
         order_items = order_itemsIn;
+    }
+
+    public String getInvoice_id() {
+        return invoice_id;
+    }
+
+    public void setInvoice_id(String invoice_id) {
+        this.invoice_id = invoice_id;
     }
 }
