@@ -25,6 +25,11 @@ public final class StringConstants {
     public static final String UPDATE_STATUS_IN_DELIVERY_ORDER_DETAIL_TABLE = "UPDATE_STATUS_IN_DELIVERY_ORDER_DETAIL_TABLE";
     public static final String FETCH_STATUS_FROM_DELIVERY_ORDER_TABLE = "FETCH_STATUS_FROM_DELIVERY_ORDER_TABLE";
     public static final String UPDATE_AWB_ORDER_IN_DELIVERY_ORDER_DETAIL_TABLE = "UPDATE_AWB_ORDER_IN_DELIVERY_ORDER_DETAIL_TABLE";
+    /* Report excuded orders */
+    public static final String FETCH_PENDING_ORDER_HEADER_BY_DELIVERY_TABLE = "FETCH_PENDING_ORDER_HEADER_BY_DELIVERY_TABLE";
+
+
+    public static final String INSERT_WHATSAPP_MESSAGE = "INSERT_WHATSAPP_MESSAGE";
 
 //    public static final String INSERT_INTO_DELIVERY_ORDER_TABLE = "INSERT INTO deliveryordertable" +
 //        " (shipping_charges,billing_last_name,billing_phone,giftwrap_charges,total_discount,shipping_state,breadth," +

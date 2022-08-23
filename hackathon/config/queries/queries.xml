@@ -108,6 +108,57 @@
         :payment_method,:height,:pickup_location,:shipping_customer_name,:billing_country,:length,weight,:order_date,:billing_city,:shipping_pincode,:shipping_email,:billing_pincode,:sub_total,:shipping_last_name,
         :comment,:order_id,:channel_id,:shipping_country,:transaction_charges,:invoice_id)
     </query>
+
+    <query name="FETCH_PENDING_ORDER_HEADER_BY_DELIVERY_TABLE" >
+        SELECT ih.CmpCode                                                                              AS cmpCode,
+               ih.DistrCode                                                                            AS distrCode,
+               ih.InvoiceNo                                                                            AS invoiceNo,
+               ih.InvoiceDt                                                                            AS invoiceDt,
+               ih.SalesmanCode                                                                         AS salesmanCode,
+               s.SalesmanName                                                                          AS salesmanName,
+               ih.RouteCode                                                                            AS routeCode,
+               r.RouteName                                                                             AS routeName,
+               ih.CustomerCode                                                                         AS customerCode,
+               c.CustomerName                                                                          AS customerName,
+               c.MobileNo                                                                              AS mobileNo,
+               c.FssaiNo                                                                               AS fssaiNo,
+               c.GSTTinNo                                                                              AS gstTinNo,
+               CONCAT(csa.CustomerShipAddr1, ', ', csa.CustomerShipAddr2, ', ', csa.CustomerShipAddr3) AS customerShipAddr,
+               ih.TotGrossAmt                                                                          AS totGrossAmt,
+               ih.TotCashDiscAmt                                                                       AS totCashDiscAmt,
+               ih.TotDBDiscAmt                                                                         AS totDBDiscAmt,
+               ih.TotSchDiscAmt                                                                        AS totSchDiscAmt,
+               ih.TotTaxAmt                                                                            AS totTaxAmt,
+               ih.TotNetAmt                                                                            AS totNetAmt,
+               ih.RoundOffAmt                                                                          AS roundOffAmt,
+               ih.TotCrNoteAmt                                                                         AS totCrNoteAmt,
+               ih.Remarks                                                                              AS remarks
+        FROM invoiceheader ih
+                 INNER JOIN customer C
+                            ON ih.CmpCode = c.CmpCode
+                                AND ih.DistrCode = c.DistrCode
+                                AND ih.CustomerCode = c.CustomerCode
+                 INNER JOIN salesman s
+                            ON ih.CmpCode = s.CmpCode
+                                AND ih.DistrCode = s.DistrCode
+                                AND ih.SalesmanCode = s.SalesmanCode
+                 INNER JOIN route r
+                            ON ih.CmpCode = r.CmpCode
+                                AND ih.DistrCode = r.DistrCode
+                                AND ih.RouteCode = r.RouteCode
+                 INNER JOIN customershipaddress csa
+                            ON ih.CmpCode = csa.CmpCode
+                                AND ih.DistrCode = csa.DistrCode
+                                AND ih.CustomerCode = csa.CustomerCode
+                                AND ih.CustomerShipCode = csa.CustomerShipCode
+
+        WHERE ih.CmpCode = ?
+        AND ih.Distrcode = ?
+        AND ih.InvoiceDt BETWEEN CAST(? AS DATE) AND CAST(? AS DATE)
+        AND ih.InvoiceNo not in (select invoice_id as InvoiceNo from delivery_order_details_table)
+    </query>
+
+
     <query name="GET_ORDER_ID_BY_INVOICE_ID_FROM_DELIVERY_ORDER_DETAIL_TABLE" >
         select order_id from delivery_order_details_table where invoice_id = :invoice_id
     </query>
@@ -144,5 +195,17 @@
     <query name="INSERT_INTO_DELIVERY_ORDER_DETAIL_TABLE">
         INSERT INTO delivery_order_details_table (order_id,invoice_id,shipment_id,awb_code,courier_code,status)
         values (:order_id,:invoice_id,:shipment_id,:awb_code,:courier_code,:status)
+    </query>
+
+
+
+
+
+
+
+
+    <query name="INSERT_WHATSAPP_MESSAGE">
+        INSERT INTO wamessage (customerCode, invoiceNo, messageId, messageContent, waMessageId, waStatus, dbStatus)
+        values (:customerCode, :invoiceNo, :messageId, :messageContent, :waMessageId, :waStatus, :dbStatus)
     </query>
 </queries>

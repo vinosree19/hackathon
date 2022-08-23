@@ -5,10 +5,13 @@ import com.botree.hackathon.dao.DAORepository;
 import com.botree.hackathon.model.*;
 import com.botree.hackathon.util.DataInstance;
 import com.botree.hackathon.util.Function;
+import com.botree.hackathon.util.whatsapp.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.http.util.TextUtils;
 import org.json.HTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -65,6 +68,9 @@ public class ReportService implements DataInstance {
     /** apiWebService. */
     private final ApiWebService apiWebService;
 
+    private final WAWebService waWebService;
+
+
     /**
      * Constructor method.
      * @param repositoryIn    repositoryIn
@@ -72,10 +78,11 @@ public class ReportService implements DataInstance {
      * @param apiWebServiceIn apiWebServiceIn
      */
     public ReportService(final DAORepository repositoryIn, final IQueryService queryServiceIn,
-                         final ApiWebService apiWebServiceIn) {
+                         final ApiWebService apiWebServiceIn, final WAWebService waWebService) {
         this.repository = repositoryIn;
         this.queryService = queryServiceIn;
         this.apiWebService = apiWebServiceIn;
+        this.waWebService = waWebService;
     }
 
     /**
@@ -87,7 +94,7 @@ public class ReportService implements DataInstance {
         LOG.info("download pending delivery order :: {}", user.getDistrCode());
         var downloadModel = new DownloadModel();
         var headerList = repository.queryForListWithRowMapper(queryService.get(
-                        StringConstants.FETCH_PENDING_ORDER_HEADER_ENTITY_FOR_REPORT), PendingOrderHeaderEntity.class,
+                        StringConstants.FETCH_PENDING_ORDER_HEADER_BY_DELIVERY_TABLE), PendingOrderHeaderEntity.class,
                 user.getCmpCode(), user.getDistrCode(), user.getStartDate(), user.getEndDate());
         var detailsList = repository.queryForListWithRowMapper(queryService.
                         get(StringConstants.FETCH_PENDING_ORDER_DETAIL_ENTITY_FOR_REPORT),
@@ -113,6 +120,7 @@ public class ReportService implements DataInstance {
         var orderId = result.get("order_id");
         var shipmentId = result.get("shipment_id");
         var status = result.get("status");
+        var statusCode = result.get("status_code");
 
         order.setOrder_id(String.valueOf(orderId));
         order.setInvoice_id(invoiceId);
@@ -127,9 +135,16 @@ public class ReportService implements DataInstance {
         deliveryOrderEntity.setCourier_code("");
         repository.insert(queryService.get(StringConstants.INSERT_INTO_DELIVERY_ORDER_DETAIL_TABLE), deliveryOrderEntity);
 
-//        }
-        return response;
-//        return apiWebService.sendAPI(order, shipmentUrl1, HttpMethod.POST);
+        HashMap<String, String > sendResponse =  new HashMap<>();
+        if ((int)statusCode == 1) {
+            sendResponse.put("status_code", "200");
+        }else {
+            sendResponse.put("status_code", "201");
+        }
+        sendResponse.put("status", String.valueOf(status));
+        sendResponse.put("invoice_id", invoiceId);
+
+        return sendResponse;
     }
 
     /**
@@ -317,4 +332,71 @@ public class ReportService implements DataInstance {
         return repository.fetchData(queryService.get(StringConstants.FETCH_ORDER_VALUE_FROM_DELIVERY_ORDER_DETAIL_TABLE),
                 mapSqlParameterSource,DeliveryOrderEntity.class);
     }
+
+
+
+
+
+
+    /**
+     * Method to process message from mobile
+     *
+     * @param webHooksObject waSendRequest
+     */
+    public String processWAWebHooks(final WAWebHooksObject webHooksObject) {
+        // webHooksObject.getHub_mode();
+        // Update Code
+        return "OK";
+    }
+
+    /**
+     * Method to process message from mobile
+     *
+     * @param waSendRequest waSendRequest
+     */
+    public String processGetWAStatus(final WASendRequest waSendRequest)  {
+        // waSendRequest.getMessageId();
+        // get load values and send it back.
+        // Update Code
+        return "OK";
+    }
+
+    /**
+     * Method to process message from mobile
+     *
+     * @param waSendRequest waSendRequest
+     */
+    public WASendResponse processMessage(final WASendRequest waSendRequest)  {
+        LOG.info("login :: {}", waSendRequest.getMessageId());
+
+        try {
+
+        WASendAPIObject waSendAPIObject = WASendAPIObjectConverter.getWAData(waSendRequest);
+        String value = null;
+
+            value = WASendAPIObjectConverter.toJsonString(waSendAPIObject);
+
+
+        System.out.println("Data :" + value);
+        var waResponse = waWebService.sendAPI(waSendAPIObject);
+
+        WASendResponse waSendResponse = new WASendResponse();
+        waSendResponse.setMessageId(waSendRequest.getMessageId());
+        waSendResponse.setCustomerCode(waSendRequest.getCustomerCode());
+        waSendResponse.setDbStatus("P");
+        waSendResponse.setWaStatus("SEND");
+        if (waResponse.getMessages().length > 0)
+            waSendResponse.setWaMessageId(waResponse.getMessages()[0].getID());
+
+        repository.insert(StringConstants.INSERT_WHATSAPP_MESSAGE, waSendResponse);
+            return waSendResponse;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+
+
 }

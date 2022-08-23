@@ -1,0 +1,114 @@
+ApiController
+
+
+    /**
+     * Method to send whatsapp message to the user;
+     * @param waSendRequest waSendRequest
+     * @return download data
+     */
+    @PostMapping("/wa-messaging/send")
+    public WASendResponse sendWAUpdate(@RequestBody final WASendRequest waSendRequest) throws JsonProcessingException {
+        return reportService.processMessage(waSendRequest);
+    }
+
+    @PostMapping("/wa-messaging/status")
+    public WASendResponse getWAStatus(@RequestBody final WASendRequest waSendRequest) throws JsonProcessingException {
+        return reportService.processMessage(waSendRequest);
+    }
+
+    @PostMapping("/wa-messaging/webhooks")
+    public String getWebHooks(@RequestBody final String hooksValue) throws JsonProcessingException {
+        LOG.info("getWebHooks :: {} ", hooksValue);
+        // Convert hooksValue into webHooksObject
+        WAWebHooksObject webHooksObject = new WAWebHooksObject();
+        return reportService.processWAWebHooks(webHooksObject);
+    }
+
+
+-----------------------------------------------------------------------------------------------
+
+StringConstants
+
+
+    public static final String INSERT_WHATSAPP_MESSAGE =
+            "INSERT_WHATSAPP_MESSAGE";
+
+------------------------------------------------------------------------------
+
+model package 
+
+6 new files
+
+WAResponse
+WASendAPIObject
+WASendAPIObjectConverter
+WASendRequest
+WASendResponse
+WAWebHooksObject
+
+----------------------------------------------------------------------------------
+
+service package
+1 new file
+WAWebService
+
+-------------------------------------------------------------------------------
+
+report Service
+
+
+
+    /**
+     * Method to process message from mobile
+     *
+     * @param waSendRequest waSendRequest
+     */
+    public String processWAWebHooks(final WAWebHooksObject webHooksObject) throws JsonProcessingException {
+        // webHooksObject.getHub_mode();
+        // Update Code
+        return "OK";
+    }
+
+    /**
+     * Method to process message from mobile
+     *
+     * @param waSendRequest waSendRequest
+     */
+    public String processGetWAStatus(final WASendRequest waSendRequest) throws JsonProcessingException {
+        // waSendRequest.getMessageId();
+        // get load values and send it back.
+        // Update Code
+        return "OK";
+    }
+
+    /**
+         * Method to process message from mobile
+         *
+         * @param waSendRequest waSendRequest
+         */
+   public WASendResponse processMessage(final WASendRequest waSendRequest) throws JsonProcessingException {
+        LOG.info("login :: {}", waSendRequest.getMessageId());
+
+        WASendAPIObject waSendAPIObject = WASendAPIObjectConverter.getWAData(waSendRequest);
+        String value = WASendAPIObjectConverter.toJsonString(waSendAPIObject);
+
+        System.out.println("Data :" + value);
+        var waResponse = waWebService.sendAPI(waSendAPIObject);
+
+        WASendResponse waSendResponse = new WASendResponse();
+        waSendResponse.setMessageId(waSendRequest.getMessageId());
+        waSendResponse.setCustomerCode(waSendRequest.getCustomerCode());
+        waSendResponse.setDbStatus("P");
+        waSendResponse.setWaStatus("SEND");
+        if (waResponse.getMessages().length > 0)
+            waSendResponse.setWaMessageId(waResponse.getMessages()[0].getID());
+
+        repository.insert(INSERT_WHATSAPP_MESSAGE, waSendResponse);
+
+        return waSendResponse;
+    }
+
+--------------------------------------------------------------------------------------
+
+
+

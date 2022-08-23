@@ -4,6 +4,10 @@ import com.botree.hackathon.model.DownloadModel;
 import com.botree.hackathon.model.OrderHeaderEntity;
 import com.botree.hackathon.model.ReportModel;
 import com.botree.hackathon.service.ReportService;
+import com.botree.hackathon.util.whatsapp.WASendRequest;
+import com.botree.hackathon.util.whatsapp.WASendResponse;
+import com.botree.hackathon.util.whatsapp.WAWebHooksObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -132,6 +136,31 @@ public class ApiController {
     @PostMapping("/delivery-order/cancel")
     public Object cancelPendingDeliveryOrder(@RequestParam(value = "invoice_id") String invoice_id){
         return reportService.cancelPendingDeliveryOrder(invoice_id);
+    }
+
+
+
+    /**
+     * Method to send whatsapp message to the user;
+     * @param waSendRequest waSendRequest
+     * @return download data
+     */
+    @PostMapping("/wa-messaging/send")
+    public WASendResponse sendWAUpdate(@RequestBody final WASendRequest waSendRequest)  {
+        return reportService.processMessage(waSendRequest);
+    }
+
+    @PostMapping("/wa-messaging/status")
+    public Object getWAStatus(@RequestBody final WASendRequest waSendRequest) {
+        return reportService.processGetWAStatus(waSendRequest);
+    }
+
+    @PostMapping("/wa-messaging/webhooks")
+    public String getWebHooks(@RequestBody final String hooksValue) {
+        LOG.info("getWebHooks :: {} ", hooksValue);
+        // Convert hooksValue into webHooksObject
+        WAWebHooksObject webHooksObject = new WAWebHooksObject();
+        return reportService.processWAWebHooks(webHooksObject);
     }
 
 }
