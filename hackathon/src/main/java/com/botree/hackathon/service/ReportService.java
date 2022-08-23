@@ -108,6 +108,24 @@ public class ReportService implements DataInstance {
         return downloadModel;
     }
 
+    public DownloadModel downloadPickUpDeliveryOrder(final ReportModel user) {
+        LOG.info("download pending delivery order :: {}", user.getDistrCode());
+        var downloadModel = new DownloadModel();
+        var headerList = repository.queryForListWithRowMapper(queryService.get(
+                        StringConstants.FETCH_PICKUP_DATA_DELIVER_PENDING_REPORT), PendingOrderHeaderEntity.class,
+                user.getCmpCode(), user.getDistrCode(), user.getStartDate(), user.getEndDate());
+        var detailsList = repository.queryForListWithRowMapper(queryService.
+                        get(StringConstants.FETCH_PENDING_ORDER_DETAIL_ENTITY_FOR_REPORT),
+                PendingOrderDetailEntity.class, user.getCmpCode(), user.getDistrCode(), user.getStartDate(),
+                user.getEndDate()).stream().collect(Collectors.groupingBy(data -> data.getCmpCode()
+                + data.getDistrCode() + data.getInvoiceNo()));
+
+        headerList.forEach(data -> data.setBillPrintDetailList(detailsList.get(data.getCmpCode()
+                + data.getDistrCode() + data.getInvoiceNo())));
+        downloadModel.setPendingDeliveryOrder(Function.compress(headerList));
+        return downloadModel;
+    }
+
     /**
      * Method to create adhoc pending delivery order.
      * @param order order
@@ -205,7 +223,7 @@ public class ReportService implements DataInstance {
                 updateCourierId);
         var awbRes = generateAwn(orderModel.get(0).getShipment_id(), orderModel.get(0).getCourier_code());
         LinkedHashMap<String, Object> result = (LinkedHashMap<String, Object>) awbRes;
-        if (result.containsValue("status_code")){
+        if (result.containsValue("status_code") && (int)result.get("status_code") != 200){
             return awbRes;
         }
         if (result.containsValue("response")) {

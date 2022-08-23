@@ -59,6 +59,12 @@ public class ApiController {
         return reportService.downloadPendingDeliveryOrder(user);
     }
 
+    @PostMapping("/delivery-order/pick-up")
+    public DownloadModel downloadPickUpDeliveryOrder(@RequestBody final ReportModel user) {
+        LOG.info("pending delivery order info :: {} ", user.getDistrCode());
+        return reportService.downloadPickUpDeliveryOrder(user);
+    }
+
     /**
      * Method to create the adhoc delivery order.
      * @param order order
