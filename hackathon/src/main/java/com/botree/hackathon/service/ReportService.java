@@ -448,6 +448,28 @@ public class ReportService implements DataInstance {
     }
 
 
+    /**
+     * Method to download bills to print by the user.
+     * @param user user
+     * @return downloadModel
+     */
+    public DownloadModel downloadOrderWithMessageStatus(final ReportModel user) {
+        LOG.info("download pending delivery order :: {}", user.getDistrCode());
+        var downloadModel = new DownloadModel();
+        var headerList = repository.queryForListWithRowMapper(queryService.get(
+                        StringConstants.FETCH_ORDER_HEADER_WITH_MESSAGE_STATUS), PendingOrderHeaderEntity.class,
+                user.getCmpCode(), user.getDistrCode());
+        var detailsList = repository.queryForListWithRowMapper(queryService.
+                        get(StringConstants.FETCH_PENDING_ORDER_DETAIL_ENTITY_FOR_REPORT),
+                PendingOrderDetailEntity.class, user.getCmpCode(), user.getDistrCode(), user.getStartDate(),
+                user.getEndDate()).stream().collect(Collectors.groupingBy(data -> data.getCmpCode()
+                + data.getDistrCode() + data.getInvoiceNo()));
+
+        headerList.forEach(data -> data.setBillPrintDetailList(detailsList.get(data.getCmpCode()
+                + data.getDistrCode() + data.getInvoiceNo())));
+        downloadModel.setPendingDeliveryOrder(Function.compress(headerList));
+        return downloadModel;
+    }
 
 
 }

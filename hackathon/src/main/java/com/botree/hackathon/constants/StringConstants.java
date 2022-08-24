@@ -35,6 +35,10 @@ public final class StringConstants {
 
     public static final String INSERT_WHATSAPP_MESSAGE = "INSERT_WHATSAPP_MESSAGE";
 
+    /** FETCH_PENDING_ORDER_HEADER_ENTITY_FOR_REPORT. */
+    public static final String FETCH_ORDER_HEADER_WITH_MESSAGE_STATUS =
+            "FETCH_ORDER_HEADER_WITH_MESSAGE_STATUS";
+
 //    public static final String INSERT_INTO_DELIVERY_ORDER_TABLE = "INSERT INTO deliveryordertable" +
 //        " (shipping_charges,billing_last_name,billing_phone,giftwrap_charges,total_discount,shipping_state,breadth," +
 //        " shipping_city,shipping_phone,billing_customer_name,billing_address,shipping_address_2,shipping_is_billing,billing_state,billing_address_2,billing_email,shipping_address," +

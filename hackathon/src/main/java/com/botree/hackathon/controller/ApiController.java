@@ -180,4 +180,15 @@ public class ApiController {
         return reportService.processWAWebHooks(webHooksObject);
     }
 
+    /**
+     * Method to fetch the pending delivery order.
+     * @param user user
+     * @return download data
+     */
+    @PostMapping("/wa-messaging/orders")
+    public DownloadModel downloadOrderWithMessageStatus(@RequestBody final ReportModel user) {
+        LOG.info("pending delivery order info :: {} ", user.getDistrCode());
+        return reportService.downloadOrderWithMessageStatus(user);
+    }
+
 }
