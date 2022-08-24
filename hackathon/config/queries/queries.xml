@@ -242,8 +242,8 @@
                                 AND ih.CustomerCode = csa.CustomerCode
                                 AND ih.CustomerShipCode = csa.CustomerShipCode
 
-        WHERE ih.CmpCode = 'AMUL'
-          AND ih.DistrCode = '000163099'
+        WHERE ih.CmpCode = ?
+          AND ih.DistrCode = ?
           AND ih.InvoiceDt BETWEEN CAST(? AS DATE) AND CAST(? AS DATE)
           AND ih.InvoiceNo  in (select invoice_id as InvoiceNo from delivery_order_details_table dt
 								WHERE dt.status = 'NEW'
