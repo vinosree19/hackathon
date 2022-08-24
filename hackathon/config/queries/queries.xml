@@ -155,7 +155,8 @@
         WHERE ih.CmpCode = ?
         AND ih.Distrcode = ?
         AND ih.InvoiceDt BETWEEN CAST(? AS DATE) AND CAST(? AS DATE)
-        AND ih.InvoiceNo not in (select invoice_id as InvoiceNo from delivery_order_details_table)
+        AND ih.InvoiceNo not in (select invoice_id as InvoiceNo from delivery_order_details_table dt
+                                WHERE dt.awb_code IS NUll)
     </query>
 
 
@@ -241,10 +242,64 @@
                                 AND ih.CustomerCode = csa.CustomerCode
                                 AND ih.CustomerShipCode = csa.CustomerShipCode
 
-        WHERE ih.CmpCode = ?
-          AND ih.DistrCode = ?
+        WHERE ih.CmpCode = 'AMUL'
+          AND ih.DistrCode = '000163099'
           AND ih.InvoiceDt BETWEEN CAST(? AS DATE) AND CAST(? AS DATE)
-          AND ih.InvoiceNo  in (select invoice_id as InvoiceNo from delivery_order_details_table dt WHERE dt.status = 'NEW')
+          AND ih.InvoiceNo  in (select invoice_id as InvoiceNo from delivery_order_details_table dt
+								WHERE dt.status = 'NEW'
+                                AND dt.awb_code IS NOT NUll
+                                AND dt.awb_code != '' )
+    </query>
+    <query name="FETCH_TRACKING_DATA_DELIVER_PENDING_REPORT" >
+        SELECT ih.CmpCode                                                                              AS cmpCode,
+               ih.DistrCode                                                                            AS distrCode,
+               ih.InvoiceNo                                                                            AS invoiceNo,
+               ih.InvoiceDt                                                                            AS invoiceDt,
+               ih.SalesmanCode                                                                         AS salesmanCode,
+               s.SalesmanName                                                                          AS salesmanName,
+               ih.RouteCode                                                                            AS routeCode,
+               r.RouteName                                                                             AS routeName,
+               ih.CustomerCode                                                                         AS customerCode,
+               c.CustomerName                                                                          AS customerName,
+               c.MobileNo                                                                              AS mobileNo,
+               c.FssaiNo                                                                               AS fssaiNo,
+               c.GSTTinNo                                                                              AS gstTinNo,
+               CONCAT(csa.CustomerShipAddr1, ', ', csa.CustomerShipAddr2, ', ', csa.CustomerShipAddr3) AS customerShipAddr,
+               ih.TotGrossAmt                                                                          AS totGrossAmt,
+               ih.TotCashDiscAmt                                                                       AS totCashDiscAmt,
+               ih.TotDBDiscAmt                                                                         AS totDBDiscAmt,
+               ih.TotSchDiscAmt                                                                        AS totSchDiscAmt,
+               ih.TotTaxAmt                                                                            AS totTaxAmt,
+               ih.TotNetAmt                                                                            AS totNetAmt,
+               ih.RoundOffAmt                                                                          AS roundOffAmt,
+               ih.TotCrNoteAmt                                                                         AS totCrNoteAmt,
+               ih.Remarks                                                                              AS remarks
+        FROM invoiceheader ih
+                 INNER JOIN customer C
+                            ON ih.CmpCode = c.CmpCode
+                                AND ih.DistrCode = c.DistrCode
+                                AND ih.CustomerCode = c.CustomerCode
+                 INNER JOIN salesman s
+                            ON ih.CmpCode = s.CmpCode
+                                AND ih.DistrCode = s.DistrCode
+                                AND ih.SalesmanCode = s.SalesmanCode
+                 INNER JOIN route r
+                            ON ih.CmpCode = r.CmpCode
+                                AND ih.DistrCode = r.DistrCode
+                                AND ih.RouteCode = r.RouteCode
+                 INNER JOIN customershipaddress csa
+                            ON ih.CmpCode = csa.CmpCode
+                                AND ih.DistrCode = csa.DistrCode
+                                AND ih.CustomerCode = csa.CustomerCode
+                                AND ih.CustomerShipCode = csa.CustomerShipCode
+
+        WHERE ih.CmpCode = 'AMUL'
+          AND ih.DistrCode = '000163099'
+          AND ih.InvoiceDt BETWEEN CAST(? AS DATE) AND CAST(? AS DATE)
+          AND ih.InvoiceNo  in (select invoice_id as InvoiceNo from delivery_order_details_table dt
+								WHERE dt.status = 'NEW'
+                                AND dt.awb_code IS NOT NUll
+                                AND dt.pickup_status = 'Y' )
     </query>
 
 

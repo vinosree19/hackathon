@@ -65,6 +65,12 @@ public class ApiController {
         return reportService.downloadPickUpDeliveryOrder(user);
     }
 
+    @PostMapping("/delivery-order/tracking")
+    public DownloadModel downloadTrackingDeliveryOrder(@RequestBody final ReportModel user) {
+        LOG.info("pending delivery order info :: {} ", user.getDistrCode());
+        return reportService.downloadPickUpDeliveryOrder(user);
+    }
+
     /**
      * Method to create the adhoc delivery order.
      * @param order order
@@ -161,11 +167,16 @@ public class ApiController {
         return reportService.processGetWAStatus(waSendRequest);
     }
 
-    @PostMapping("/wa-messaging/webhooks")
-    public String getWebHooks(@RequestBody final String hooksValue) {
-        LOG.info("getWebHooks :: {} ", hooksValue);
+    @GetMapping("/wa-messaging/webhooks")
+    public String getWebHooks(@RequestParam(value = "hub_mode") String hubMode,
+                              @RequestParam(value = "hub_verify_token") String verifyToken,
+                              @RequestParam(value = "hub_challenge") String challenge) {
+        LOG.info("getWebHooks :: {} ", hubMode+verifyToken+challenge);
         // Convert hooksValue into webHooksObject
         WAWebHooksObject webHooksObject = new WAWebHooksObject();
+        webHooksObject.setHub_mode(hubMode);
+        webHooksObject.setHub_verify_token(verifyToken);
+        webHooksObject.setHub_challenge(challenge);
         return reportService.processWAWebHooks(webHooksObject);
     }
 

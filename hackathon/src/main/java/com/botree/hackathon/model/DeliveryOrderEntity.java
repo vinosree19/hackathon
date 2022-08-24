@@ -8,6 +8,7 @@ public class DeliveryOrderEntity{
 	private String awb_code;
 	private String courier_code;
 	private String status;
+	private String pickup_status;
 
 
 	public String getOrder_id() {
@@ -56,5 +57,14 @@ public class DeliveryOrderEntity{
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+
+	public String getPickup_status() {
+		return pickup_status;
+	}
+
+	public void setPickup_status(String pickup_status) {
+		this.pickup_status = pickup_status;
 	}
 }

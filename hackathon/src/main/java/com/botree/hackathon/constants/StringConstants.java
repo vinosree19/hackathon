@@ -29,6 +29,8 @@ public final class StringConstants {
     public static final String FETCH_PENDING_ORDER_HEADER_BY_DELIVERY_TABLE = "FETCH_PENDING_ORDER_HEADER_BY_DELIVERY_TABLE";
     /* Query to get the pickup data */
     public static final String FETCH_PICKUP_DATA_DELIVER_PENDING_REPORT = "FETCH_PICKUP_DATA_DELIVER_PENDING_REPORT";
+    /* Query to get the tracking list data */
+    public static final String FETCH_TRACKING_DATA_DELIVER_PENDING_REPORT = "FETCH_TRACKING_DATA_DELIVER_PENDING_REPORT";
 
 
     public static final String INSERT_WHATSAPP_MESSAGE = "INSERT_WHATSAPP_MESSAGE";

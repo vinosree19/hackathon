@@ -126,6 +126,24 @@ public class ReportService implements DataInstance {
         return downloadModel;
     }
 
+    public DownloadModel downloadTrackingDeliveryOrder(final ReportModel user) {
+        LOG.info("download pending delivery order :: {}", user.getDistrCode());
+        var downloadModel = new DownloadModel();
+        var headerList = repository.queryForListWithRowMapper(queryService.get(
+                        StringConstants.FETCH_TRACKING_DATA_DELIVER_PENDING_REPORT), PendingOrderHeaderEntity.class,
+                user.getCmpCode(), user.getDistrCode(), user.getStartDate(), user.getEndDate());
+        var detailsList = repository.queryForListWithRowMapper(queryService.
+                        get(StringConstants.FETCH_PENDING_ORDER_DETAIL_ENTITY_FOR_REPORT),
+                PendingOrderDetailEntity.class, user.getCmpCode(), user.getDistrCode(), user.getStartDate(),
+                user.getEndDate()).stream().collect(Collectors.groupingBy(data -> data.getCmpCode()
+                + data.getDistrCode() + data.getInvoiceNo()));
+
+        headerList.forEach(data -> data.setBillPrintDetailList(detailsList.get(data.getCmpCode()
+                + data.getDistrCode() + data.getInvoiceNo())));
+        downloadModel.setPendingDeliveryOrder(Function.compress(headerList));
+        return downloadModel;
+    }
+
     /**
      * Method to create adhoc pending delivery order.
      * @param order order
@@ -133,25 +151,38 @@ public class ReportService implements DataInstance {
     public Object createAdhocPendingDeliveryOrder(final OrderHeaderEntity order) {
         LOG.info("login :: {}", order.getOrder_id());
         var invoiceId = order.getOrder_id();
-        Object response = apiWebService.sendAPI(order, shipmentUrl1, HttpMethod.POST);
-        LinkedHashMap<String , Object> result = (LinkedHashMap<String, Object>) response;
-        var orderId = result.get("order_id");
-        var shipmentId = result.get("shipment_id");
-        var status = result.get("status");
-        var statusCode = result.get("status_code");
+        var statusCode = 0;
+        String status = "";
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+        mapSqlParameterSource.addValue("invoice_id", invoiceId);
+        List<DeliveryOrderEntity> orderExist = repository.fetchData(
+                queryService.get(StringConstants.FETCH_ORDER_VALUE_FROM_DELIVERY_ORDER_DETAIL_TABLE),
+                mapSqlParameterSource,DeliveryOrderEntity.class);
+        if (orderExist.isEmpty() || orderExist.size() <=0 || !orderExist.get(0).getInvoice_id().equals(invoiceId)) {
+            Object response = apiWebService.sendAPI(order, shipmentUrl1, HttpMethod.POST);
+            LinkedHashMap<String, Object> result = (LinkedHashMap<String, Object>) response;
+            var orderId = result.get("order_id");
+            var shipmentId = result.get("shipment_id");
+            status = (String) result.get("status");
+            statusCode = (int)result.get("status_code");
 
-        order.setOrder_id(String.valueOf(orderId));
-        order.setInvoice_id(invoiceId);
-        repository.insert(queryService.get(StringConstants.INSERT_INTO_DELIVERY_ORDER_TABLE),order);
+            order.setOrder_id(String.valueOf(orderId));
+            order.setInvoice_id(invoiceId);
+            repository.insert(queryService.get(StringConstants.INSERT_INTO_DELIVERY_ORDER_TABLE), order);
 
-        DeliveryOrderEntity deliveryOrderEntity =  new DeliveryOrderEntity();
-        deliveryOrderEntity.setOrder_id(String.valueOf(orderId));
-        deliveryOrderEntity.setShipment_id(String.valueOf(shipmentId));
-        deliveryOrderEntity.setInvoice_id(invoiceId);
-        deliveryOrderEntity.setStatus(String.valueOf(status));
-        deliveryOrderEntity.setAwb_code("");
-        deliveryOrderEntity.setCourier_code("");
-        repository.insert(queryService.get(StringConstants.INSERT_INTO_DELIVERY_ORDER_DETAIL_TABLE), deliveryOrderEntity);
+            DeliveryOrderEntity deliveryOrderEntity = new DeliveryOrderEntity();
+            deliveryOrderEntity.setOrder_id(String.valueOf(orderId));
+            deliveryOrderEntity.setShipment_id(String.valueOf(shipmentId));
+            deliveryOrderEntity.setInvoice_id(invoiceId);
+            deliveryOrderEntity.setStatus(String.valueOf(status));
+            deliveryOrderEntity.setAwb_code("");
+            deliveryOrderEntity.setCourier_code("");
+            deliveryOrderEntity.setPickup_status("N");
+            repository.insert(queryService.get(StringConstants.INSERT_INTO_DELIVERY_ORDER_DETAIL_TABLE), deliveryOrderEntity);
+        }else {
+            statusCode = 1;
+            status = "Order Already Placed";
+        }
 
         HashMap<String, String > sendResponse =  new HashMap<>();
         if ((int)statusCode == 1) {
@@ -362,7 +393,7 @@ public class ReportService implements DataInstance {
      * @param webHooksObject waSendRequest
      */
     public String processWAWebHooks(final WAWebHooksObject webHooksObject) {
-        // webHooksObject.getHub_mode();
+        System.out.println(webHooksObject.getHub_verify_token());
         // Update Code
         return "OK";
     }
@@ -403,10 +434,12 @@ public class ReportService implements DataInstance {
         waSendResponse.setCustomerCode(waSendRequest.getCustomerCode());
         waSendResponse.setDbStatus("P");
         waSendResponse.setWaStatus("SEND");
+        waSendResponse.setMessageContent(waSendRequest.getMessageContent());
+        waSendResponse.setInvoiceNo(waSendRequest.getInvoiceNo());
         if (waResponse.getMessages().length > 0)
             waSendResponse.setWaMessageId(waResponse.getMessages()[0].getID());
 
-        repository.insert(StringConstants.INSERT_WHATSAPP_MESSAGE, waSendResponse);
+        repository.insert(queryService.get(StringConstants.INSERT_WHATSAPP_MESSAGE), waSendResponse);
             return waSendResponse;
         } catch (JsonProcessingException e) {
             e.printStackTrace();
