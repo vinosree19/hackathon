@@ -3,10 +3,6 @@ package com.botree.hackathon.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-/**
- * UnProcessableEntityException class.
- * @author vinodkumara
- */
 @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
 public class UnProcessableEntityException extends RuntimeException {
 

@@ -1,9 +1,5 @@
 package com.botree.hackathon.model;
 
-/**
- * User Model class.
- * @author vinodkumar.a
- */
 public class UserModel {
 
     /** email. */

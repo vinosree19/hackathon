@@ -4,12 +4,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
-/**
- * This service class is used to fetch query from xml.
- * @author Ashok Saravanan M.(Emp Id : 522)
- * Copyright © 2017 to present Botree Software. All rights reserved.
- */
-
 @XmlRootElement(name = "queries")
 public class QueriesDTO {
     /**

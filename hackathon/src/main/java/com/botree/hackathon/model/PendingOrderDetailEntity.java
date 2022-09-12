@@ -1,9 +1,6 @@
 package com.botree.hackathon.model;
 
-/**
- * Pending Order Detail Entity class.
- * @author vinodkumar.a
- */
+
 public class PendingOrderDetailEntity extends AbstractEntity {
 
     /** distrCode. */

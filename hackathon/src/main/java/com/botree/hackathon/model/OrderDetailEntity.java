@@ -1,9 +1,6 @@
 package com.botree.hackathon.model;
 
-/**
- * Order Detail Entity class.
- * @author vinodkumar.a
- */
+
 public class OrderDetailEntity extends AbstractEntity {
 
     /** name. */

@@ -3,10 +3,7 @@ package com.botree.hackathon.model;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Order Header Entity class.
- * @author vinodkumar.a
- */
+
 public class OrderHeaderEntity extends AbstractEntity {
 
     /** order_id. */

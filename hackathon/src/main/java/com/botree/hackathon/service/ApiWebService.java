@@ -24,10 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-/**
- * This class is used to send post message.
- * @author vinodkumar.a
- */
+
 @Service
 public class ApiWebService implements DataInstance {
 

@@ -2,10 +2,7 @@ package com.botree.hackathon.model;
 
 import java.util.Date;
 
-/**
- * Report Model class.
- * @author vinodkumar.a
- */
+
 public class ReportModel {
 
     /** cmpCode. */

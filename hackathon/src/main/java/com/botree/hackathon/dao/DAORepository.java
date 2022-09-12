@@ -15,10 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * This class is used to perform db operations.
- * @author vinodkumara
- */
 @Repository
 public class DAORepository {
 

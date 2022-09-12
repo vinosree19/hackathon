@@ -17,10 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * API Controller to get all the request for data.
- * @author vinodkumar.a
- */
 @RestController
 @RequestMapping(value = "/api/v1")
 public class ApiController {

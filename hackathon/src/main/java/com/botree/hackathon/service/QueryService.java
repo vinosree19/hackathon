@@ -14,10 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 
 
-/**
- * This class is used to load queries.
- * @author vinodkumar.a
- */
+
 @Service
 public class QueryService implements IQueryService {
 

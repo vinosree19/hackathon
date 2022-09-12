@@ -3,10 +3,7 @@ package com.botree.hackathon.model;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Pending Order Header Entity class.
- * @author vinodkumar.a
- */
+
 public class PendingOrderHeaderEntity extends AbstractEntity {
 
     /** distrCode. */

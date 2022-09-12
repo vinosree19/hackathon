@@ -14,10 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.zip.GZIPOutputStream;
 
-/**
- * This class is used to convert json to POJO.
- * @author vinodkumara
- */
+
 public final class Function {
 
     /** LOG. */

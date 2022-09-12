@@ -12,10 +12,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
 
-/**
- * Configuration class used to created data {@link DataSource} and {@link JdbcTemplate}.
- * @author vinodkumar.a
- */
+
 @Configuration
 public class DAOConfiguration {
 

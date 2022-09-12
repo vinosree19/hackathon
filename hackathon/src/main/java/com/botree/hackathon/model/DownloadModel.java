@@ -1,9 +1,5 @@
 package com.botree.hackathon.model;
 
-/**
- * Class contain the download details.
- * @author vinodkumar.a
- */
 public class DownloadModel {
 
     /** pendingDeliveryOrder. */

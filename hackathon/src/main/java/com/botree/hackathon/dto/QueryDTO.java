@@ -6,11 +6,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
 
-/**
- * This service class is used to fetch name and query.
- * @author Ashok Saravanan M.(Emp Id : 522)
- * Copyright © 2017 to present Botree Software. All rights reserved.
- */
 
 @XmlRootElement(name = "query")
 @XmlAccessorType(XmlAccessType.FIELD)

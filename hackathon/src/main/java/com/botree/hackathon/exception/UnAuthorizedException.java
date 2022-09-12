@@ -3,10 +3,6 @@ package com.botree.hackathon.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-/**
- * UnAuthorizedException class for unauthorized login.
- * @author vinodkumara
- */
 @ResponseStatus(HttpStatus.UNAUTHORIZED)
 public class UnAuthorizedException extends RuntimeException {
 

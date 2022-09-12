@@ -2,10 +2,6 @@ package com.botree.hackathon.model;
 
 import java.util.Date;
 
-/**
- * Abstract Entity class.
- * @author vinodkumar.a
- */
 public class AbstractEntity {
 
     /** cmpCode. */

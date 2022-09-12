@@ -17,16 +17,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.SystemPropertyUtils;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Class contains the report generation logic.
- * @author vinodkumara
- */
+
 @Service
 @Transactional
 public class ReportService implements DataInstance {
@@ -257,6 +255,15 @@ public class ReportService implements DataInstance {
         if (result.containsValue("status_code") && (int)result.get("status_code") != 200){
             return awbRes;
         }
+
+        // TODO : Need To Remove The Below Code  -- Charles
+        MapSqlParameterSource sample = new MapSqlParameterSource();
+        sample.addValue("awb_code", System.currentTimeMillis());
+        sample.addValue("invoice_id",invoiceId);
+        sample.addValue("pickup_status","Y");
+        repository.updateStatus(queryService.get(StringConstants.UPDATE_AWB_ORDER_IN_DELIVERY_ORDER_DETAIL_TABLE),
+                sample);
+
         if (result.containsValue("response")) {
             LinkedHashMap<String, Object> item = (LinkedHashMap<String, Object>) result.get("response");
             if (result.containsValue("awb_code")) {
@@ -264,6 +271,7 @@ public class ReportService implements DataInstance {
                 MapSqlParameterSource updateAwbCode = new MapSqlParameterSource();
                 updateAwbCode.addValue("awb_code",awb_code);
                 updateAwbCode.addValue("invoice_id",invoiceId);
+                updateAwbCode.addValue("pickup_status","Y");
                 repository.updateStatus(queryService.get(StringConstants.UPDATE_AWB_ORDER_IN_DELIVERY_ORDER_DETAIL_TABLE),
                         updateAwbCode);
             }
