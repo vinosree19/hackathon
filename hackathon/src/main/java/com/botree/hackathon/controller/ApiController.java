@@ -55,12 +55,22 @@ public class ApiController {
         return reportService.downloadPendingDeliveryOrder(user);
     }
 
+    /**
+     * Used to get pickup order list
+     * @param user user
+     * @return DownloadModel
+     */
     @PostMapping("/delivery-order/pick-up")
     public DownloadModel downloadPickUpDeliveryOrder(@RequestBody final ReportModel user) {
         LOG.info("pending delivery order info :: {} ", user.getDistrCode());
         return reportService.downloadPickUpDeliveryOrder(user);
     }
 
+    /**
+     * Used to get tracking order list
+     * @param user user
+     * @return DownloadModel
+     */
     @PostMapping("/delivery-order/tracking")
     public DownloadModel downloadTrackingDeliveryOrder(@RequestBody final ReportModel user) {
         LOG.info("pending delivery order info :: {} ", user.getDistrCode());
@@ -141,6 +151,11 @@ public class ApiController {
         return reportService.getAwbTrackingWithShipmentIdDetails(invoice_id);
     }
 
+    /**
+     * To cancel the Order
+     * @param invoice_id invoice_id
+     * @return invoice status
+     */
     @PostMapping("/delivery-order/cancel")
     public Object cancelPendingDeliveryOrder(@RequestParam(value = "invoice_id") String invoice_id){
         return reportService.cancelPendingDeliveryOrder(invoice_id);
@@ -158,11 +173,23 @@ public class ApiController {
         return reportService.processMessage(waSendRequest);
     }
 
+    /**
+     * get Whatsapp status
+     * @param waSendRequest waSendRequest
+     * @return status
+     */
     @PostMapping("/wa-messaging/status")
     public Object getWAStatus(@RequestBody final WASendRequest waSendRequest) {
         return reportService.processGetWAStatus(waSendRequest);
     }
 
+    /**
+     * Webhok response from whats app
+     * @param hubMode hubMode
+     * @param verifyToken verifyToken
+     * @param challenge challenge
+     * @return status
+     */
     @GetMapping("/wa-messaging/webhooks")
     public String getWebHooks(@RequestParam(value = "hub_mode") String hubMode,
                               @RequestParam(value = "hub_verify_token") String verifyToken,
